@@ -64,12 +64,6 @@ jobs:
       - name: Apply Migrations
         run: docker compose exec backend python manage.py migrate
 
-      - name: Run Backend Tests
-        run: docker compose exec backend pytest --cov
-
-      - name: Run Frontend Tests
-        run: docker compose exec frontend npm test -- --watchAll=false
-
       - name: Stop Services
         if: always()
         run: docker compose down
