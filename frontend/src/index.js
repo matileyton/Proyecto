@@ -13,7 +13,10 @@ root.render(
   <React.StrictMode>
     <CssBaseline />
     <BrowserRouter
-      future={{ v7_startTransition: true }}
+      future={{ 
+        v7_startTransition: true,
+        v7_relativeSplatRoutes: true,
+      }}
     >
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <ErrorBoundary>
