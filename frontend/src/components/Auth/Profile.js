@@ -1,6 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, TextField, Button, Typography, Box, CircularProgress } from '@mui/material';
-import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/api';
 import { useSnackbar } from 'notistack';
 

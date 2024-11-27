@@ -38,7 +38,7 @@ function ProductList() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   const filteredProducts = products.filter(
     (product) =>

@@ -37,7 +37,7 @@ function ProductListAdmin() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   const handleDelete = async (id) => {
     try {

@@ -6,7 +6,7 @@ import { useSnackbar } from 'notistack';
 
 function Login() {
   const { loginUser } = useContext(AuthContext);
-  const { enqueueSnackbar } = useSnackbar(); // Usar enqueueSnackbar
+  useSnackbar();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
