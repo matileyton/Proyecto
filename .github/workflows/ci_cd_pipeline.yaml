@@ -1,0 +1,68 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12.7'
+
+    - name: Install Backend Dependencies
+      run: |
+        pip install -r backend/requirements.txt
+
+    - name: Run Backend Tests
+      working-directory: backend
+      run: pytest --cov
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '10.9.1'
+
+    - name: Install Frontend Dependencies
+      working-directory: frontend
+      run: npm install
+
+    - name: Run Frontend Tests
+      working-directory: frontend
+      run: npm test
+
+    - name: Set up PostgreSQL
+      uses: Harmon758/postgresql-action@v2
+      with:
+        postgresql version: '17.2'
+        database: personal_shopper_test_db
+        username: postgres
+        password: test_password
+
+    - name: Apply Migrations
+      working-directory: backend
+      run: |
+        python manage.py makemigrations
+        python manage.py migrate
+
+    - name: Deploy Backend to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        git push https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/your-heroku-app.git HEAD:main
+
+    - name: Deploy Frontend to Vercel
+      run: |
+        npm install -g vercel
+        vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
