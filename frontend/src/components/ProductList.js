@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../api/api';
 import {
   Container,
   Typography,
-  Grid,
   Card,
   CardContent,
   CardActions,
@@ -20,11 +19,11 @@ function ProductList() {
   const [loading, setLoading] = useState(true);
   const { enqueueSnackbar } = useSnackbar();
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await api.get('productos/');
       const data = response.data;
-
+  
       // Si la API devuelve resultados paginados
       const productsData = data.results ? data.results : data;
       setProducts(productsData);
@@ -34,7 +33,7 @@ function ProductList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [enqueueSnackbar, setProducts, setLoading]);
 
   useEffect(() => {
     fetchProducts();
