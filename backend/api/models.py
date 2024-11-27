@@ -28,7 +28,7 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True)
     marca = models.CharField(max_length=50)
     precio_usd = models.DecimalField(max_digits=10, decimal_places=2)
-    peso_kg = models.DecimalField(max_digits=5, decimal_places=2)  # Peso en kilogramos
+    peso_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     fecha_compra = models.DateField(null=True, blank=True)
     disponible = models.BooleanField(default=True)
     imagen = models.ImageField(upload_to='productos/', null=True, blank=True)

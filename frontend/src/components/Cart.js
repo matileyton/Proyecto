@@ -13,9 +13,13 @@ import {
   Box,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
 
 function Cart() {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const handleCheckout = async () => {
     try {
@@ -24,11 +28,12 @@ function Cart() {
         cantidad: item.quantity,
       }));
       await api.post('pedidos/', { detalles });
-      alert('Pedido realizado con éxito');
+      enqueueSnackbar('Pedido realizado con éxito', { variant: 'success' });
       clearCart();
+      navigate('/orders');
     } catch (error) {
       console.error('Error al realizar el pedido', error);
-      alert('Error al realizar el pedido');
+      enqueueSnackbar('Error al realizar el pedido', { variant: 'error' });
     }
   };
 
@@ -51,11 +56,14 @@ function Cart() {
         <>
           <List>
             {cartItems.map((item) => (
-              <ListItem key={item.id} secondaryAction={
-                <IconButton edge="end" aria-label="delete" onClick={() => removeFromCart(item.id)}>
-                  <DeleteIcon />
-                </IconButton>
-              }>
+              <ListItem
+                key={item.id}
+                secondaryAction={
+                  <IconButton edge="end" aria-label="delete" onClick={() => removeFromCart(item.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              >
                 <ListItemText
                   primary={item.nombre}
                   secondary={`Precio: ${item.precio_usd} USD`}
@@ -73,7 +81,9 @@ function Cart() {
             ))}
           </List>
           <Box sx={{ mt: 2 }}>
-            <Typography variant="h6">Total: {totalUSD.toFixed(2)} USD / {totalCLP.toFixed(2)} CLP</Typography>
+            <Typography variant="h6">
+              Total: {totalUSD.toFixed(2)} USD {totalCLP ? `/ ${totalCLP.toFixed(2)} CLP` : ''}
+            </Typography>
             <Button variant="contained" color="primary" onClick={handleCheckout} sx={{ mt: 2 }}>
               Realizar Pedido
             </Button>

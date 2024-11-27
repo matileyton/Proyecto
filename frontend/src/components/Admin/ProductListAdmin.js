@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api/api';
+import api from '../../api/api';
 import {
   Container,
   Typography,
@@ -14,7 +14,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 
-function ProductList() {
+function ProductListAdmin() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,6 @@ function ProductList() {
       const response = await api.get('productos/');
       const data = response.data;
 
-      // Si la API devuelve resultados paginados
       const productsData = data.results ? data.results : data;
       setProducts(productsData);
     } catch (error) {
@@ -39,6 +38,17 @@ function ProductList() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`productos/${id}/`);
+      enqueueSnackbar('Producto eliminado exitosamente', { variant: 'success' });
+      setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar el producto', error);
+      enqueueSnackbar('Error al eliminar el producto', { variant: 'error' });
+    }
+  };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -58,7 +68,7 @@ function ProductList() {
   return (
     <Container maxWidth="lg" sx={{ mt: 5 }}>
       <Typography variant="h4" gutterBottom>
-        Productos
+        Gestionar Productos
       </Typography>
       <TextField
         label="Buscar Productos"
@@ -87,8 +97,11 @@ function ProductList() {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button size="small" component={Link} to={`/products/${product.id}`}>
-                    Ver Detalles
+                  <Button size="small" component={Link} to={`/admin/products/edit/${product.id}`}>
+                    Editar
+                  </Button>
+                  <Button size="small" color="error" onClick={() => handleDelete(product.id)}>
+                    Eliminar
                   </Button>
                 </CardActions>
               </Card>
@@ -100,4 +113,4 @@ function ProductList() {
   );
 }
 
-export default ProductList;
+export default ProductListAdmin;

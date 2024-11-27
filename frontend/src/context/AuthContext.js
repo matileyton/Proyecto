@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import api from '../api/api';
 import { useNavigate } from 'react-router-dom';
-import { useSnackbar } from 'notistack'; 
+import { useSnackbar } from 'notistack';
 
 export const AuthContext = createContext();
 
@@ -26,6 +26,19 @@ export const AuthProvider = ({ children }) => {
     return null;
   });
 
+  const [isAdmin, setIsAdmin] = useState(() => {
+    if (authTokens) {
+      try {
+        const decoded = jwtDecode(authTokens.access);
+        return decoded.is_staff || false;
+      } catch (error) {
+        console.error('Error al decodificar el token', error);
+        return false;
+      }
+    }
+    return false;
+  });
+
   const loginUser = async (username, password) => {
     try {
       const response = await api.post('token/', {
@@ -33,7 +46,9 @@ export const AuthProvider = ({ children }) => {
         password,
       });
       setAuthTokens(response.data);
-      setUser(jwtDecode(response.data.access));
+      const decodedUser = jwtDecode(response.data.access);
+      setUser(decodedUser);
+      setIsAdmin(decodedUser.is_staff || false);
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
       enqueueSnackbar('Inicio de sesión exitoso', { variant: 'success' });
@@ -56,9 +71,8 @@ export const AuthProvider = ({ children }) => {
 
   const registerUser = async (userData) => {
     try {
-      const response = await api.post('users/register/', userData);
+      await api.post('users/register/', userData);
       enqueueSnackbar('Registro exitoso. Iniciando sesión...', { variant: 'success' });
-      // Iniciar sesión automáticamente después del registro
       await loginUser(userData.username, userData.password);
     } catch (error) {
       console.error('Error al registrar usuario', error);
@@ -80,8 +94,11 @@ export const AuthProvider = ({ children }) => {
           ...prev,
           access: response.data.access,
         }));
-        setUser(jwtDecode(response.data.access));
+        const decodedUser = jwtDecode(response.data.access);
+        setUser(decodedUser);
+        setIsAdmin(decodedUser.is_staff || false);
         localStorage.setItem('access_token', response.data.access);
+        api.defaults.headers['Authorization'] = 'Bearer ' + response.data.access;
         enqueueSnackbar('Token renovado', { variant: 'info' });
       } catch (error) {
         console.error('Error al renovar el token', error);
@@ -90,32 +107,24 @@ export const AuthProvider = ({ children }) => {
     } else {
       logoutUser();
     }
-  }, [enqueueSnackbar, logoutUser]);
+  }, [enqueueSnackbar, logoutUser]);;
 
   useEffect(() => {
-    const checkTokenExpiration = () => {
+    const interval = setInterval(() => {
       if (authTokens) {
-        try {
-          const decoded = jwtDecode(authTokens.access);
-          const exp = decoded.exp * 1000; // Convertir a milisegundos
-          const now = Date.now();
-          if (exp - now < 60000) { // Si expira en menos de 1 minuto
-            refreshToken();
-          }
-        } catch (error) {
-          console.error('Error al verificar la expiración del token', error);
-          logoutUser();
+        const decoded = jwtDecode(authTokens.access);
+        const exp = decoded.exp * 1000;
+        const now = Date.now();
+        if (exp - now < 60000) {
+          refreshToken();
         }
       }
-    };
-
-    const interval = setInterval(checkTokenExpiration, 30000); // Verificar cada 30 segundos
-
+    }, 30000);
     return () => clearInterval(interval);
-  }, [authTokens, refreshToken, logoutUser]);
+  }, [authTokens, refreshToken]);
 
   return (
-    <AuthContext.Provider value={{ user, authTokens, loginUser, logoutUser, registerUser }}>
+    <AuthContext.Provider value={{ user, authTokens, isAdmin, loginUser, logoutUser, registerUser }}>
       {children}
     </AuthContext.Provider>
   );

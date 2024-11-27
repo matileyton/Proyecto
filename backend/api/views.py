@@ -35,6 +35,12 @@ class ProductoViewSet(viewsets.ModelViewSet):
         else:
             raise PermissionDenied("No tiene permiso para actualizar productos.")
 
+    def perform_destroy(self, instance):
+        if self.request.user.is_staff:
+            instance.delete()
+        else:
+            raise PermissionDenied("No tiene permiso para eliminar productos.")
+
 class PedidoViewSet(viewsets.ModelViewSet):
     serializer_class = PedidoSerializer
     permission_classes = [IsAuthenticated]

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Producto, Usuario, Pedido, DetallePedido, Notificacion, Configuracion
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,12 +45,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'username', 'email']
 
 class ProductoSerializer(serializers.ModelSerializer):
-    precio_clp = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
-    precio_final_clp = serializers.DecimalField(max_digits=12, decimal_places=2, allow_null=True, required=False)
-
     class Meta:
         model = Producto
         fields = '__all__'
+
+    def validate(self, data):
+        precio_usd = data.get('precio_usd')
+        precio_final_clp = data.get('precio_final_clp')
+        if not precio_usd and not precio_final_clp:
+            raise serializers.ValidationError("Debes ingresar el precio en USD o el precio final en CLP.")
+        return data
 
 class DetallePedidoSerializer(serializers.ModelSerializer):
     producto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all())
@@ -116,3 +121,14 @@ class ConfiguracionSerializer(serializers.ModelSerializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Agregar campos personalizados al token
+        token['is_staff'] = user.is_staff
+        token['is_superuser'] = user.is_superuser
+
+        return token

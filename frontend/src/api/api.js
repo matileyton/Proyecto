@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/v1/', // Cambia la URL si es necesario
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1/',
 });
 
 // Interceptor para incluir el token en cada solicitud
@@ -41,6 +41,8 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch (err) {
           console.error('No se pudo refrescar el token', err);
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
           // Redirigir al login si no se puede refrescar el token
           window.location.href = '/login';
           return Promise.reject(err);

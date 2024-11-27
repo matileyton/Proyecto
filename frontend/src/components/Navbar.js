@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 function Navbar() {
-  const { user, logoutUser } = useContext(AuthContext);
+  const { user, logoutUser, isAdmin } = useContext(AuthContext);
 
   return (
     <AppBar position="static">
@@ -36,6 +36,13 @@ function Navbar() {
               <Button color="inherit" component={Link} to="/delete-account">
                 Eliminar Cuenta
               </Button>
+              {isAdmin && (
+                <>
+                  <Button color="inherit" component={Link} to="/admin">
+                    Administrador
+                  </Button>
+                </>
+              )}
               <Button color="inherit" onClick={logoutUser}>
                 Cerrar Sesión
               </Button>

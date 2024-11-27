@@ -7,13 +7,17 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
 } from '@mui/material';
 import { CartContext } from '../context/CartContext';
+import { useSnackbar } from 'notistack';
 
 function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useContext(CartContext);
   const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -22,21 +26,31 @@ function ProductDetail() {
         setProduct(response.data);
       } catch (error) {
         console.error('Error al obtener el producto', error);
-        alert('Error al obtener el producto');
+        enqueueSnackbar('Error al obtener el producto', { variant: 'error' });
+      } finally {
+        setLoading(false);
       }
     };
     fetchProduct();
-  }, [id]);
+  }, [id, enqueueSnackbar]);
 
   const handleAddToCart = () => {
     addToCart(product);
-    alert('Producto añadido al carrito');
+    enqueueSnackbar('Producto añadido al carrito', { variant: 'success' });
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 5, textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   if (!product) {
     return (
       <Container maxWidth="md" sx={{ mt: 5 }}>
-        <Typography variant="h5">Cargando...</Typography>
+        <Typography variant="h5">Producto no encontrado</Typography>
       </Container>
     );
   }
@@ -44,13 +58,6 @@ function ProductDetail() {
   return (
     <Container maxWidth="md" sx={{ mt: 5 }}>
       <Card>
-        {/* Si tienes imágenes de productos, puedes añadirlas aquí */}
-        {/* <CardMedia
-          component="img"
-          image={product.imagen_url}
-          alt={product.nombre}
-          height="400"
-        /> */}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {product.nombre}
