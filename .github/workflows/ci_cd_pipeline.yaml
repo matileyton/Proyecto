@@ -76,7 +76,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Despliegue del backend
+      # Deploy the backend to Render
       - name: Deploy to Render
         run: |
           curl -X POST \
@@ -86,10 +86,11 @@ jobs:
             --data '{"clearCache": false}' \
             https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys
 
-      # Despliegue del frontend
+      # Deploy the frontend to Vercel
       - name: Deploy Frontend to Vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-args: "--prod"
+          vercel-args: "--prod --yes"
           working-directory: ./frontend
+          vercel-project-name: proyecto
