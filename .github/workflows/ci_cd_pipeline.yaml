@@ -87,10 +87,8 @@ jobs:
             https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys
 
       # Deploy the frontend to Vercel
-      - name: Deploy Frontend to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-args: "--prod --yes"
-          working-directory: ./frontend
           vercel-project-name: proyecto
